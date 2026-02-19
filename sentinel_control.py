@@ -7,7 +7,7 @@ REPO_NAME = "Sentinel-Access"
 
 # Twilio Credentials (provided by you)
 ACCOUNT_SID = 'AC2e9c9be175911cce282ad3109c53ade5'
-AUTH_TOKEN = '0820479e9367a679294fce8a615f11bf'
+AUTH_TOKEN = '0d045827ba9d8e4b3fd86381ef0eee12'
 FROM_WHATSAPP = 'whatsapp:+14155238886'
 TO_WHATSAPP = 'whatsapp:+61409139355'
 
