@@ -2,6 +2,23 @@ import os
 import subprocess
 import glob
 from twilio.rest import Client
+from dotenv import load_dotenv  # <--- Add this
+
+# 1. Load the "Secret Lockbox"
+load_dotenv(r"C:\OneDrive\PublicReports\File Storage\.env")
+
+# 2. Assign the keys from the lockbox
+ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+
+# 3. Rest of your Config
+GITHUB_USER = "bernievcooke-cloud"
+REPO_NAME = "Sentinel-Access"
+BASE_PATH = r"C:\OneDrive\PublicReports\OUTPUT"
+FROM_WHATSAPP = 'whatsapp:+14155238886'
+TO_WHATSAPP = 'whatsapp:+61409139355'
+
+# ... (rest of your functions below)
 
 # --- CONFIG ---
 GITHUB_USER = "bernievcooke-cloud"
@@ -10,7 +27,7 @@ BASE_PATH = r"C:\OneDrive\PublicReports\OUTPUT"
 
 # Twilio Credentials
 ACCOUNT_SID = 'AC2e9c9be175911cce282ad3109c53ade5'
-AUTH_TOKEN = '0820479e9367a679294fce8a615f11bf' 
+AUTH_TOKEN = '0d045827ba9d8e4b3fd86381ef0eee12' 
 FROM_WHATSAPP = 'whatsapp:+14155238886'
 TO_WHATSAPP = 'whatsapp:+61409139355'
 
@@ -54,12 +71,20 @@ def deploy_and_notify(location):
 
 def send_only_whatsapp(location, filename):
     live_url = f"https://{GITHUB_USER}.github.io/{REPO_NAME}/OUTPUT/{location}/{filename}".replace(" ", "%20")
-    client = Client(ACCOUNT_SID, AUTH_TOKEN)
-    client.messages.create(
-        body=f"🌊 *Sentinel Report Ready*\nLocation: {location}\n\nView: {live_url}",
+    try:
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        client.messages.create(
+            body=f"🌊 *Sentinel Report Ready*\nLocation: {location}\n\nView: {live_url}",
+            from_=FROM_WHATSAPP,
+            to=TO_WHATSAPP
+        )
+        print("✅ WhatsApp sent using existing cloud file.")
+    except Exception as e:
+        print(f"❌ Twilio still failing: {e}")
+        print(f"🔗 But your link is LIVE: {live_url}")
         from_=FROM_WHATSAPP,
         to=TO_WHATSAPP
-    )
+    
     print("✅ WhatsApp sent using existing cloud file.")
 
 def main_menu():
