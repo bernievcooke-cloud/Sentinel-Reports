@@ -13,6 +13,7 @@ import re
 try:
     from core.locations import LOCATIONS
 except ImportError:
+    # Safe defaults if file is missing
     LOCATIONS = {"TriggPoint": (-31.87, 115.75), "BellsBeach": (-38.37, 144.28)}
 
 try:
@@ -29,7 +30,7 @@ BASE_PATH = r"C:\OneDrive\Public Reports A\OUTPUT"
 class SentinelHub:
     def __init__(self, root):
         self.root = root
-        self.root.title("SENTINEL EXECUTIVE STRATEGY HUB V3.10")
+        self.root.title("SENTINEL EXECUTIVE STRATEGY HUB V3.11")
         self.root.geometry("1450x850")
         self.root.configure(bg="#0a0a0a")
         self.current_report_url = ""
@@ -49,11 +50,11 @@ class SentinelHub:
         self.root.columnconfigure((0, 1, 2), weight=1, uniform="col")
         self.root.rowconfigure(0, weight=1)
 
-        # --- COLUMN 1: LEFT BAR (ADMIN) ---
+        # --- COLUMN 1: LEFT BAR ---
         col1 = tk.Frame(self.root, bg="#161616")
         col1.grid(row=0, column=0, sticky="nsew", padx=15, pady=15)
         
-        tk.Label(col1, text="Admin", font=("Verdana", 18, "bold"), bg="#161616", fg="#00FFCC").pack(pady=(20, 20))
+        tk.Label(col1, text="Admin", font=("Verdana", 18, "bold"), bg="#161616", fg="#00FFCC").pack(pady=20)
 
         tk.Label(col1, text="REPORT TYPE", font=("Verdana", 10), bg="#161616", fg="gray").pack()
         self.type_menu = ttk.Combobox(col1, values=["Surf", "Sky"], state="readonly", font=("Consolas", 14))
@@ -70,7 +71,6 @@ class SentinelHub:
         self.phone_entry.insert(0, "61")
         self.phone_entry.pack(fill="x", padx=40, pady=5, ipady=10)
 
-        # INSTRUCTION BOX
         instr_frame = tk.Frame(col1, bg="#101010", highlightthickness=1, highlightbackground="#444")
         instr_frame.pack(fill="x", padx=30, pady=25)
         instructions = "SYSTEM INSTRUCTIONS:\n\n1. Enter number & INITIATE.\n2. Sync takes approx 2 mins.\n3. DO NOT TOUCH mouse/keys\n   during WhatsApp dispatch."
@@ -79,7 +79,7 @@ class SentinelHub:
         # --- COLUMN 2: PROGRESS ---
         col2 = tk.Frame(self.root, bg="#161616")
         col2.grid(row=0, column=1, sticky="nsew", padx=15, pady=15)
-        tk.Label(col2, text="system progress", font=("Verdana", 18, "bold"), bg="#161616", fg="#00FFCC").pack(pady=(20, 20))
+        tk.Label(col2, text="system progress", font=("Verdana", 18, "bold"), bg="#161616", fg="#00FFCC").pack(pady=20)
         self.log = tk.Text(col2, height=18, bg="black", fg="#00FF00", font=("Consolas", 11), bd=0, padx=15, pady=15)
         self.log.pack(fill="x", padx=25, pady=5)
         self.write("READY")
@@ -128,7 +128,7 @@ class SentinelHub:
         clean_phone = re.sub(r'[^0-9]', '', raw_phone)
         link = f"https://web.whatsapp.com/send?phone={clean_phone}&text={urllib.parse.quote(self.current_report_url)}"
         webbrowser.open(link)
-        self.write(f"WAKING WHATSAPP (80s)...")
+        self.write("WAKING WHATSAPP (80s Wait)...")
         self.root.after(80000, self.robot_fire)
 
     def robot_fire(self):
@@ -136,22 +136,28 @@ class SentinelHub:
             pyautogui.hotkey('alt', 'tab')
             time.sleep(5)
             w, h = pyautogui.size()
-            # 1. Focus click
-            pyautogui.click(x=w * 0.5, y=h * 0.5) 
-            time.sleep(2)
-            # 2. Input click
-            pyautogui.click(x=w * 0.5, y=h * 0.92) 
+            
+            # 1. Force Browser Focus (Click Top Left)
+            pyautogui.click(x=w * 0.1, y=h * 0.1) 
             time.sleep(1)
-            # 3. Triple Dispatch Sequence
+
+            # 2. Navigation Hack: Shift+Tab usually forces focus to the chat box
+            self.write("LOCKING CHAT BOX...")
+            pyautogui.hotkey('shift', 'tab')
+            time.sleep(1)
+            
+            # 3. Double-Fire Sequence
+            self.write("FORCING DISPATCH...")
+            pyautogui.write(" ") # Tiny space to wake the send button
             pyautogui.press('enter')
             time.sleep(1)
+            
+            # 4. Universal Tab-Enter backup
             pyautogui.press('tab')
             time.sleep(0.5)
             pyautogui.press('enter')
-            # 4. Physical Click Send Arrow
-            pyautogui.click(x=w * 0.96, y=h * 0.92)
             
-            time.sleep(10)
+            time.sleep(10) # Outbox buffer
             pyautogui.hotkey('ctrl', 'w')
             self.write("DISPATCH SUCCESSFUL.")
             winsound.Beep(1200, 400)
