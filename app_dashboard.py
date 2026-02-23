@@ -30,7 +30,7 @@ BASE_PATH = r"C:\OneDrive\Public Reports A\OUTPUT"
 class SentinelHub:
     def __init__(self, root):
         self.root = root
-        self.root.title("SENTINEL EXECUTIVE STRATEGY HUB V3.90")
+        self.root.title("SENTINEL EXECUTIVE STRATEGY HUB V3.95")
         self.root.geometry("1450x850")
         self.root.configure(bg="#0a0a0a")
         self.current_report_url = ""
@@ -132,7 +132,7 @@ class SentinelHub:
         self.write(f"STAGING: {loc}...")
         
         try:
-            coords = LOCATIONS.get(loc, (-38.37, 144.28))
+            coords = LOCATIONS.get(loc, (-31.87, 115.75)) # Defaulting to Trigg Point
             pdf_path = generate_report(loc, self.type_menu.get(), coords, BASE_PATH)
             
             if push_to_github():
@@ -154,40 +154,41 @@ class SentinelHub:
             self.whatsapp_btn.config(state="normal", bg="#25D366", fg="white")
 
     def dispatch(self):
-        # --- PHONE SANITIZER ---
         raw_phone = self.phone_entry.get().strip()
-        clean_phone = re.sub(r'[^0-9]', '', raw_phone) # Removes +, spaces, etc.
-        
+        clean_phone = re.sub(r'[^0-9]', '', raw_phone) 
         msg = f"Sentinel Report: {self.current_report_url}"
         webbrowser.open(f"https://web.whatsapp.com/send?phone={clean_phone}&text={urllib.parse.quote(msg)}")
         
         self.write("WAKING WHATSAPP ENGINE...")
-        self.write(f"DESTINATION: +{clean_phone}")
-        self.write("WAITING FOR SYNC (60s)...")
-        self.root.after(60000, self.robot_fire)
+        self.write("WAITING FOR SYNC (75s)...")
+        self.root.after(75000, self.robot_fire) # Bumped to 75s for safety
 
     def robot_fire(self):
         try:
+            # A. HARD FOCUS BROWSER
             pyautogui.hotkey('alt', 'tab') 
-            time.sleep(3)
+            time.sleep(4)
             w, h = pyautogui.size()
             
-            # Double-Click Focus into Chat
-            pyautogui.click(x=w * 0.5, y=h * 0.9) 
+            # B. SAFETY CLICK (TOP OF BROWSER)
+            pyautogui.click(x=w * 0.5, y=h * 0.1) 
             time.sleep(1)
-            pyautogui.click(x=w * 0.5, y=h * 0.9) 
-            time.sleep(1.5)
             
-            # Force Fire Blast
+            # C. FOCUS INPUT FIELD
+            pyautogui.click(x=w * 0.5, y=h * 0.92) 
+            time.sleep(1)
+            pyautogui.press('tab') # Fail-safe to land in input
+            time.sleep(1)
+            
+            # D. THE FORCE-FIRE SEQUENCE
             for _ in range(7):
                 pyautogui.press('enter')
                 time.sleep(1.0)
             
-            # THE CRITICAL BUFFER: Wait 5s for the message to leave the PC
-            self.write("DATA DISPATCHING TO MOBILE...")
-            time.sleep(5) 
+            self.write("WAITING FOR SYNC HANDSHAKE...")
+            time.sleep(8) # Extra buffer for message to leave the PC
             
-            pyautogui.hotkey('ctrl', 'w') # Clean up tab
+            pyautogui.hotkey('ctrl', 'w') 
             self.write("DISPATCH SUCCESSFUL. SYSTEM IDLE.")
             winsound.Beep(1200, 400)
             
