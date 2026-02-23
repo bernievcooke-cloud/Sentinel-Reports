@@ -30,7 +30,7 @@ BASE_PATH = r"C:\OneDrive\Public Reports A\OUTPUT"
 class SentinelHub:
     def __init__(self, root):
         self.root = root
-        self.root.title("SENTINEL EXECUTIVE STRATEGY HUB V3.95")
+        self.root.title("SENTINEL EXECUTIVE STRATEGY HUB V4.0")
         self.root.geometry("1450x850")
         self.root.configure(bg="#0a0a0a")
         self.current_report_url = ""
@@ -112,10 +112,8 @@ class SentinelHub:
         col3.grid(row=0, column=2, sticky="nsew", padx=15, pady=15)
         self.feed_top = tk.Text(col3, height=15, bg="#080808", fg="#00FF00", font=("Consolas", 10), bd=0, padx=15, pady=15)
         self.feed_top.pack(fill="x", padx=25, pady=(40, 10))
-        self.feed_top.insert("1.0", "[DATA FEED ALPHA]")
         self.feed_bottom = tk.Text(col3, height=15, bg="#080808", fg="#00BFFF", font=("Consolas", 10), bd=0, padx=15, pady=15)
         self.feed_bottom.pack(fill="x", padx=25, pady=10)
-        self.feed_bottom.insert("1.0", "[DATA FEED BETA]")
 
     def reset_fields(self):
         self.phone_entry.delete(0, tk.END)
@@ -132,7 +130,7 @@ class SentinelHub:
         self.write(f"STAGING: {loc}...")
         
         try:
-            coords = LOCATIONS.get(loc, (-31.87, 115.75)) # Defaulting to Trigg Point
+            coords = LOCATIONS.get(loc, (-31.87, 115.75))
             pdf_path = generate_report(loc, self.type_menu.get(), coords, BASE_PATH)
             
             if push_to_github():
@@ -153,41 +151,47 @@ class SentinelHub:
             self.main_btn.config(state="normal", text="INITIATE REPORT", bg="#0055ff")
             self.whatsapp_btn.config(state="normal", bg="#25D366", fg="white")
 
+    # --- THE MISSING DISPATCH FUNCTION ---
     def dispatch(self):
         raw_phone = self.phone_entry.get().strip()
         clean_phone = re.sub(r'[^0-9]', '', raw_phone) 
         msg = f"Sentinel Report: {self.current_report_url}"
-        webbrowser.open(f"https://web.whatsapp.com/send?phone={clean_phone}&text={urllib.parse.quote(msg)}")
         
-        self.write("WAKING WHATSAPP ENGINE...")
-        self.write("WAITING FOR SYNC (75s)...")
-        self.root.after(75000, self.robot_fire) # Bumped to 75s for safety
+        # Open WhatsApp with specific New Number parameters
+        link = f"https://web.whatsapp.com/send/?phone={clean_phone}&text={urllib.parse.quote(msg)}&type=phone_number&app_absent=0"
+        webbrowser.open(link)
+        
+        self.write(f"TARGET LOCK: +{clean_phone}")
+        self.write("WAITING FOR SYNC (80s)...")
+        self.root.after(80000, self.robot_fire)
 
+    # --- THE ABSOLUTE DISPATCH ROBOT ---
     def robot_fire(self):
         try:
-            # A. HARD FOCUS BROWSER
             pyautogui.hotkey('alt', 'tab') 
-            time.sleep(4)
+            time.sleep(5)
             w, h = pyautogui.size()
             
-            # B. SAFETY CLICK (TOP OF BROWSER)
-            pyautogui.click(x=w * 0.5, y=h * 0.1) 
+            # 1. Wake the Browser
+            pyautogui.click(x=w * 0.5, y=h * 0.5) 
+            time.sleep(2)
+            
+            # 2. Click the message area
+            pyautogui.click(x=w * 0.7, y=h * 0.92) 
+            time.sleep(2)
+            
+            # 3. Fail-safe: Mouse click on the actual Green Arrow icon
+            # Calibrated for maximized browser
+            self.write("FIRING ABSOLUTE DISPATCH...")
+            pyautogui.click(x=w * 0.96, y=h * 0.92) 
             time.sleep(1)
             
-            # C. FOCUS INPUT FIELD
-            pyautogui.click(x=w * 0.5, y=h * 0.92) 
-            time.sleep(1)
-            pyautogui.press('tab') # Fail-safe to land in input
-            time.sleep(1)
-            
-            # D. THE FORCE-FIRE SEQUENCE
-            for _ in range(7):
+            # 4. Keyboard Blast backup
+            for _ in range(5):
                 pyautogui.press('enter')
-                time.sleep(1.0)
+                time.sleep(0.5)
             
-            self.write("WAITING FOR SYNC HANDSHAKE...")
-            time.sleep(8) # Extra buffer for message to leave the PC
-            
+            time.sleep(10) # Outbox buffer
             pyautogui.hotkey('ctrl', 'w') 
             self.write("DISPATCH SUCCESSFUL. SYSTEM IDLE.")
             winsound.Beep(1200, 400)
